@@ -1,0 +1,50 @@
+version: '3'
+services:
+
+  # MySQL
+  mysql:
+    image: mysql:5.7
+    container_name: web-mysql
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    restart: always
+
+  # WordPress
+  wordpress:
+    image: wordpress:latest
+    container_name: web-wordpress
+    environment:
+      - WORDPRESS_DB_HOST=mysql:3306
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+    volumes:
+      - ./data/wordpress:/var/www/html
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    depends_on:
+      - mysql
+    restart: always
+
+  # SSL Certificate Container
+  https-portal:
+    image: steveltn/https-portal:1
+    container_name: web-https-portal
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - wordpress
+    restart: always
+    volumes:
+      - ./data/ssl-certs:/var/lib/https-portal
+    environment:
+      STAGE: '${PUBLISH_ENV}'
+      DOMAINS: '${DOMAIN} -> http://wordpress'
+      WORKER_PROCESSES: auto
+      WORKER_CONNECTIONS: 2048
+      CLIENT_MAX_BODY_SIZE: '128M'
