@@ -42,6 +42,7 @@ DOMAIN=<example>.com
 ```
 
 ## 注意
+- .envファイルの`SOME_****`は自分で設定する箇所
 - wordpressのタグはlatestにしてあるのでバージョンが新しくなったら対応が必要かもしれません
 - `PUBLISH_ENV=staging`の場合、ブラウザでアクセスした際に警告が出ます
 
